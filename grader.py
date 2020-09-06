@@ -2,8 +2,9 @@
 
 import os, sys, subprocess
 import getopt, glob, re, itertools
-import time, tempfile, zipfile, tarfile, csv
+import time, tempfile, zipfile, tarfile, csv, shutil
 from operator import itemgetter
+import evaluation
 
 BASEPATH = os.getcwd()
 OUTFILE = os.path.join(BASEPATH, 'results.csv')
@@ -15,9 +16,9 @@ ARCHIVETYPE = 'zip'
 
 def usage(rc = 2):
   print('Usage:')
-  print('  %s' % sys.argv[0] + '\t  [-o <outputfile (results.csv)>]' + \
-          '\n\t\t  [-b <baseline-dir (solutions)>]\t The directory with baseline code' + \
-          '\n\t\t  [-s <submissions-dir (submissions)>]\t The directory with students\' submissions' + \
+  print('  %s' % sys.argv[0] + '\t  [-o <outputfile (%s/results.csv)>]' % BASEPATH + \
+          '\n\t\t  [-b <baseline-dir (%s/solutions)>]\t The directory with baseline code' % BASEPATH + \
+          '\n\t\t  [-s <submissions-dir (%s/submissions)>]\t The directory with students\' submissions' % BASEPATH + \
           '\n\t\t  [-t <archivetype> (zip)]\t The archive type of students\' submission' + \
           '\n\t\t  [-n <num>]\t Stop after grading \'num\' submissions'
        )
@@ -86,6 +87,13 @@ def get_submission_files(): # Assuming all submissions to be in SUBMISSIONDIR
   submission_files_nodup = remove_duplicates(submission_files)
   return submission_files_nodup
 
+eval_dict = {
+        'ex1': evaluation.ex1, # 2%
+        'ex2': evaluation.ex2, # 2%
+        'ex3': evaluation.ex3, # 0%
+        'ex4': evaluation.ex4, # 2%
+        'ex5': evaluation.ex5, # 1%
+        }
 
 
 def main():
@@ -107,12 +115,33 @@ def main():
       OUTFILE = os.path.abspath(a)
     if o == '-t' or o == '--archivetype':
       ARCHIVETYPE = a
-    if o == 'n':
-      MAX_ITER = a
+    if o == '-n':
+      MAX_ITER = int(a)
 
   submission_files = get_submission_files()
-  print(len(submission_files))
-  print(submission_files)
+  it = len(submission_files) if MAX_ITER == -1 else MAX_ITER
+  print('Grading %s submissions' % it)
+
+  try:
+    tmpdir = tempfile.mkdtemp()
+  except OSError as e:
+    print(e, file = sys.stderr)
+
+  ret = set_baseline()
+
+  while it > 0:
+    it -= 1
+    for _ex in [ 'ex1', 'ex2', 'ex3', 'ex4', 'ex5', ]:
+      eval_dict[_ex]()
+
+
+  try:
+    shutil.rmtree(tmpdir)
+  except OSError as e:
+    print(e, file = sys.stderr)
+
+
+
 
 if __name__ == '__main__':
   main()
