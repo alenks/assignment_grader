@@ -1,0 +1,21 @@
+# object files
+*.d
+*.o
+*.pyc
+*.a
+
+# emacs temp files
+*~
+   
+# vi temp files
+*.swp
+      
+# log files
+*.log
+
+# results
+*.csv
+
+# other directories
+submissions
+solutions
