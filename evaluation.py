@@ -43,7 +43,7 @@ def ex1(infile_c, workdir, sol_dir):
   copy_testing_files(sol_dir, workdir, ex_dir, files)
   if not os.path.isfile(os.path.join(workdir, ex_dir, 'node.c')):
     return 0
-  cmd = "make -C %s" %(os.path.join(workdir, ex_dir))
+  cmd = "make -C %s > /dev/null" %(os.path.join(workdir, ex_dir))
   if not ex(cmd):
     score[0] = 2
   else:
@@ -51,7 +51,7 @@ def ex1(infile_c, workdir, sol_dir):
   def gen_cmd(workdir, ex_dir, ex_no, testfile):
     cmd = os.path.join(workdir, ex_dir, ex_no)
     cmd = ' '.join([cmd, '<', os.path.join(workdir, ex_dir, '%s.in'%(testfile))])
-    cmd = ' '.join([cmd, '|', 'diff', '%s.out'%(testfile), '-'])
+    cmd = ' '.join([cmd, '|', 'diff', os.path.join(workdir, ex_dir, '%s.out'%(testfile)), '-'])
     return cmd
 
   cmd = gen_cmd(workdir, ex_dir, 'ex1', 'big_test')
@@ -83,7 +83,7 @@ def ex2(infile_c, workdir, sol_dir):
   copy_testing_files(sol_dir, workdir, ex_dir, files)
   if not os.path.isfile(os.path.join(workdir, ex_dir, 'node.c')):
     return 0
-  cmd = "make -C %s" %(os.path.join(workdir, ex_dir))
+  cmd = "make -C %s > /dev/null" %(os.path.join(workdir, ex_dir))
   if not ex(cmd):
     score[0] = 2
   else:
@@ -91,7 +91,7 @@ def ex2(infile_c, workdir, sol_dir):
   def gen_cmd(workdir, ex_dir, ex_no, testfile):
     cmd = os.path.join(workdir, ex_dir, ex_no)
     cmd = ' '.join([cmd, os.path.join(workdir, ex_dir, '%s.in'%(testfile))])
-    cmd = ' '.join([cmd, '|', 'diff', '%s.out'%(testfile), '-'])
+    cmd = ' '.join([cmd, '|', 'diff', os.path.join(workdir, ex_dir, '%s.out'%(testfile)), '-'])
     return cmd
 
   cmd = gen_cmd(workdir, ex_dir, 'ex1', 'big_test')
