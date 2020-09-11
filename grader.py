@@ -13,16 +13,18 @@ SUBMISSIONDIR = os.path.join(BASEPATH, 'submissions')
 MAX_ITER = -1
 ARCHIVETYPE = 'zip'
 NUM_EX = 5
+TMPDIR = ''
 
 
 def usage(rc = 2):
   print('Usage:')
-  print('  %s' % sys.argv[0] + '\t  [-o <outputfile (%s/results.csv)>]' % BASEPATH + \
+  print('  %s' % sys.argv[0] + '\t  [-h | --help]' + \
+          '\n\t\t  [-o <outputfile (%s/results.csv)>]' % BASEPATH + \
           '\n\t\t  [-b <baseline-dir (%s/solutions)>]\t The directory with baseline code' % BASEPATH + \
           '\n\t\t  [-s <submissions-dir (%s/submissions)>]\t The directory with students\' submissions' % BASEPATH + \
           '\n\t\t  [-t <archivetype> (zip)]\t The archive type of students\' submission' + \
-          '\n\t\t  [-n <num>]\t Stop after grading \'num\' submissions' + \
-          '\n\t\t  [-e <num>]\t Total number of exercises'
+          '\n\t\t  [-n <num (total submissions)>]\t Stop after grading \'num\' submissions' + \
+          '\n\t\t  [-e <num (5)>]\t Total number of exercises'
        )
   print()
   sys.exit(rc)
@@ -89,23 +91,51 @@ def get_submission_files(): # Assuming all submissions to be in SUBMISSIONDIR
   submission_files_nodup = remove_duplicates(submission_files)
   return submission_files_nodup
 
+def extract_file(fname, path):
+  try:
+    shutil.unpack_archive(fname, path)
+  except Exception as e:
+    print(e, file = sys.stderr)
+  return
+
+def copy_to_workdir(submission_file, TMPDIR):
+  src = os.path.join(SUBMISSIONDIR, submission_file)
+  dst = os.path.join(TMPDIR, submission_file)
+  try:
+    shutil.copyfile(src, dst)
+  except Exception as e:
+    print(e, file = sys.stderr)
+  extract_file(dst, TMPDIR)
+  return
+
+def remove_from_workdir(dirname):
+  for content in os.listdir(dirname):
+    fullpath = os.path.join(dirname, content)
+    try:
+      if os.path.isfile(fullpath) or os.path.islink(fullpath):
+        os.unlink(fullpath)
+      elif os.path.isdir(fullpath):
+        shutil.rmtree(fullpath)
+    except Exception as e:
+      print(e, file = sys.stderr)
+  return
 
 
 eval_lst = [
-        evaluation.ex1, # 2%
-        evaluation.ex2, # 2%
-        evaluation.ex3, # 0%
-        evaluation.ex4, # 2%
-        evaluation.ex5, # 1%
+        evaluation.ex1, # 2% {8,6,4,2,0}
+        evaluation.ex2, # 2% {8,6,4,2,0}
+        evaluation.ex3, # 0% {0,-1,-2}
+        evaluation.ex4, # 2% {8,7,6,5,4,3,2,1,0}
+        evaluation.ex5, # 1% {4,0}
         ]
 
 def main():
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hb:s:o:t:n:e:", [ "help", "baseline=", "submissions=", "archivetype=", "output=", "numex=" ])
+    opts, args = getopt.getopt(sys.argv[1:], "hb:s:o:t:n:e:", [ "help", "baseline=", "submissions=", "archivetype=", "output=", "stopcount=", "numex=" ])
   except getopt.GetoptError as e:
     print(e, file = sys.stderr)
     usage(1)
-  global SOLUTIONDIR, SUBMISSIONDIR, OUTFILE, MAX_ITER, ARCHIVETYPE, NUM_EX
+  global SOLUTIONDIR, SUBMISSIONDIR, OUTFILE, MAX_ITER, ARCHIVETYPE, NUM_EX, TMPDIR
   submission_files = []
   for o, a in opts:
     if o == '-h' or o == '--help':
@@ -118,7 +148,7 @@ def main():
       OUTFILE = os.path.abspath(a)
     if o == '-t' or o == '--archivetype':
       ARCHIVETYPE = a
-    if o == '-n':
+    if o == '-n' or o == '--stopcount':
       MAX_ITER = int(a)
     if o == '-e' or o == '--numex':
       NUM_EX = int(a)
@@ -128,28 +158,37 @@ def main():
   print('Grading %s submissions' % tot_it)
 
   try:
-    tmpdir = tempfile.mkdtemp()
-  except OSError as e:
+    TMPDIR = tempfile.mkdtemp()
+  except Exception as e:
     print(e, file = sys.stderr)
   with open(OUTFILE, 'w') as csv_file:
     writer = csv.writer(csv_file, delimiter=',')
     header = ['StudentID'] + ['Ex' + str(x+1) for x in range(0,NUM_EX)]  + ['FileName']
     writer.writerow(header)
     for _it in range(tot_it):
+      copy_to_workdir(submission_files[_it], TMPDIR)
       res_ex = []
       for _ex in range(0, NUM_EX):
-        ret = eval_lst[_ex](os.path.join(SUBMISSIONDIR, submission_files[_it]), tmpdir, SOLUTIONDIR)
+        ret = eval_lst[_ex](os.path.join(SUBMISSIONDIR, submission_files[_it]), TMPDIR, SOLUTIONDIR)
         res_ex.insert(_ex, ret)
       writer.writerow([get_subm_key(submission_files[_it])] + res_ex + [submission_files[_it]])
-
+      remove_from_workdir(TMPDIR)
 
   try:
-    shutil.rmtree(tmpdir)
-  except OSError as e:
+    shutil.rmtree(TMPDIR)
+  except Exception as e:
     print(e, file = sys.stderr)
 
 
 
-
 if __name__ == '__main__':
-  main()
+  try:
+    main()
+  except KeyboardInterrupt:
+    if os.path.exists(TMPDIR):
+      print('\nCtrl-C detected: Removing %s' %(TMPDIR), file = sys.stdout)
+      try:
+        shutil.rmtree(TMPDIR)
+      except Exception as e:
+        print(e, file = sys.stderr)
+    sys.exit(-1)
