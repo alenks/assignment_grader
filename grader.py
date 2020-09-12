@@ -65,7 +65,7 @@ def remove_duplicates(submission_files): # Remove duplicates and select the late
   for subm1, subm2 in pairwise(submission_files):
       if subm2 and is_same_person(subm1, subm2):
         duplicates.update([(alphanum_key(subm1), subm1), (alphanum_key(subm2), subm2)])
-      else:
+      elif (alphanum_key(subm1), subm1) not in duplicates:
         submission_files_nodup.append(subm1)
   duplicates = list(duplicates)
   duplicates = sorted_nicely(duplicates, itemgetter(0))
@@ -163,7 +163,7 @@ def main():
     print(e, file = sys.stderr)
   with open(OUTFILE, 'w') as csv_file:
     writer = csv.writer(csv_file, delimiter=',')
-    header = ['StudentID'] + ['Ex' + str(x+1) for x in range(0,NUM_EX)]  + ['FileName']
+    header = ['StudentID'] + ['Ex' + str(x+1) for x in range(0,NUM_EX)]  + ['Total', 'FileName']
     writer.writerow(header)
     for _it in range(tot_it):
       copy_to_workdir(submission_files[_it], TMPDIR)
@@ -171,7 +171,7 @@ def main():
       for _ex in range(0, NUM_EX):
         ret = eval_lst[_ex](os.path.join(SUBMISSIONDIR, submission_files[_it]), TMPDIR, SOLUTIONDIR)
         res_ex.insert(_ex, ret)
-      writer.writerow([get_subm_key(submission_files[_it])] + res_ex + [submission_files[_it]])
+      writer.writerow([get_subm_key(submission_files[_it])] + res_ex + [sum(res_ex), submission_files[_it]])
       remove_from_workdir(TMPDIR)
 
   try:
