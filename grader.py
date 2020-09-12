@@ -92,10 +92,26 @@ def get_submission_files(): # Assuming all submissions to be in SUBMISSIONDIR
   return submission_files_nodup
 
 def extract_file(fname, path):
+  listdir_pr = os.listdir(path)
   try:
     shutil.unpack_archive(fname, path)
   except Exception as e:
     print(e, file = sys.stderr)
+    return
+  listdir_ex = os.listdir(path)
+  ex_dirs = list(set(listdir_ex) - set(listdir_pr))
+  def is_id(ex_dirs):
+    for el in ex_dirs:
+      pattern = '^(A|E)\w{7,8}[^"]*$'
+      if re.match(pattern, el):
+        return el
+
+  if is_id(ex_dirs):
+    list_l1 = glob.glob(os.path.join(path, is_id(ex_dirs), '*'))
+    for el in list_l1:
+      el = el[:-1] if el.endswith('/') else el
+      shutil.copytree(el, os.path.join(path, el.split('/')[-1]))
+  print(os.listdir(path))
   return
 
 def copy_to_workdir(submission_file, TMPDIR):
@@ -171,7 +187,7 @@ def main():
       for _ex in range(0, NUM_EX):
         ret = eval_lst[_ex](os.path.join(SUBMISSIONDIR, submission_files[_it]), TMPDIR, SOLUTIONDIR)
         res_ex.insert(_ex, ret)
-      writer.writerow([get_subm_key(submission_files[_it])] + res_ex + [sum(res_ex), submission_files[_it]])
+      writer.writerow([get_subm_key(submission_files[_it])] + res_ex + [max(0, sum(res_ex)), submission_files[_it]])
       remove_from_workdir(TMPDIR)
 
   try:
