@@ -111,7 +111,6 @@ def extract_file(fname, path):
     for el in list_l1:
       el = el[:-1] if el.endswith('/') else el
       shutil.copytree(el, os.path.join(path, el.split('/')[-1]))
-  print(os.listdir(path))
   return
 
 def copy_to_workdir(submission_file, TMPDIR):
