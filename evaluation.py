@@ -1,8 +1,12 @@
 import os, sys, subprocess, math
 import shutil, re, errno
 
-def get_output(cmd):
-  return subprocess.getoutput(cmd).strip()
+def get_output(cmd, path = '.'):
+  basepath = os.getcwd()
+  os.chdir(path)
+  ret = subprocess.getoutput(cmd).strip()
+  os.chdir(basepath)
+  return ret
 
 def ex(cmd):
   return os.system(cmd)
@@ -37,14 +41,19 @@ def copy_testing_files(sol_dir, workdir, ex_dir, files):
 
 
 def ex1(infile_c, workdir, sol_dir):
-  score = [0.0] * 3
+  num_qparts = 3
+  score = [0.0] * num_qparts
   ex_dir = 'ex1'
   files = ['Makefile', 'ex1.c', 'node.h', 'big_test.in', 'big_test.out', 'ultra_test.in', 'ultra_test.out',]
   copy_testing_files(sol_dir, workdir, ex_dir, files)
   if not os.path.isfile(os.path.join(workdir, ex_dir, 'node.c')):
     return 0
-  cmd = "make -C %s > /dev/null" %(os.path.join(workdir, ex_dir))
-  if not ex(cmd):
+  cmd = "make -C %s > /dev/null 2>&1" %(os.path.join(workdir, ex_dir))
+  try:
+    ret = ex(cmd)
+  except subprocess.CalledProcessError as e:
+    return 0
+  if not ret:
     score[0] = 2
   else:
     return 0
@@ -56,7 +65,7 @@ def ex1(infile_c, workdir, sol_dir):
 
   cmd = gen_cmd(workdir, ex_dir, 'ex1', 'big_test')
   try:
-    ret = get_output(cmd)
+    ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except subprocess.CalledProcessError as e:
     print(e.output, file = sys.stderr)
     return 2
@@ -66,7 +75,7 @@ def ex1(infile_c, workdir, sol_dir):
 
   cmd = gen_cmd(workdir, ex_dir, 'ex1', 'ultra_test')
   try:
-    ret = get_output(cmd)
+    ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except subprocess.CalledProcessError as e:
     print(e.output, file = sys.stderr)
     return 4
@@ -77,14 +86,19 @@ def ex1(infile_c, workdir, sol_dir):
   return math.floor(sum(score))
 
 def ex2(infile_c, workdir, sol_dir):
-  score = [0.0]*3
+  num_qparts = 3
+  score = [0.0] * num_qparts
   ex_dir = 'ex2'
   files = ['Makefile', 'node.h', 'functions.c', 'functions.h', 'big_test.in', 'big_test.out', 'ultra_test.in', 'ultra_test.out']
   copy_testing_files(sol_dir, workdir, ex_dir, files)
   if not os.path.isfile(os.path.join(workdir, ex_dir, 'node.c')):
     return 0
-  cmd = "make -C %s > /dev/null" %(os.path.join(workdir, ex_dir))
-  if not ex(cmd):
+  cmd = "make -C %s > /dev/null 2>&1" %(os.path.join(workdir, ex_dir))
+  try:
+    ret = ex(cmd)
+  except subprocess.CalledProcessError as e:
+    return 0
+  if not ret:
     score[0] = 2
   else:
     return 0
@@ -94,9 +108,9 @@ def ex2(infile_c, workdir, sol_dir):
     cmd = ' '.join([cmd, '|', 'diff', os.path.join(workdir, ex_dir, '%s.out'%(testfile)), '-'])
     return cmd
 
-  cmd = gen_cmd(workdir, ex_dir, 'ex1', 'big_test')
+  cmd = gen_cmd(workdir, ex_dir, 'ex2', 'big_test')
   try:
-    ret = get_output(cmd)
+    ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except subprocess.CalledProcessError as e:
     print(e.output, file = sys.stderr)
     return 2
@@ -104,9 +118,9 @@ def ex2(infile_c, workdir, sol_dir):
     return 2
   score[1] = 2
 
-  cmd = gen_cmd(workdir, ex_dir, 'ex1', 'ultra_test')
+  cmd = gen_cmd(workdir, ex_dir, 'ex2', 'ultra_test')
   try:
-    ret = get_output(cmd)
+    ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except subprocess.CalledProcessError as e:
     print(e.output, file = sys.stderr)
     return 4
@@ -117,35 +131,50 @@ def ex2(infile_c, workdir, sol_dir):
   return math.floor(sum(score))
 
 def ex3(infile_c, workdir, sol_dir):
+  num_qparts = 2
+  score = [0.0] * num_qparts
   apps_to_check = []
   test_in = 'big_test.in'
   app1 = os.path.join(workdir, 'ex1', 'ex1')
-  app1 = ' '.join([app1, '<', os.path.join(workdir, 'ex1', test_in)])
-  apps_to_check.append(app1)
+  if not os.path.isfile(app1):
+    score[0] = -1
+    apps_to_check.append(-1)
+  else:
+    app1 = ' '.join([app1, '<', os.path.join(workdir, 'ex1', test_in)])
+    apps_to_check.append(app1)
   app2 = os.path.join(workdir, 'ex2', 'ex2')
-  app2 = ' '.join([app2, os.path.join(workdir, 'ex2', test_in)])
-  apps_to_check.append(app2)
-  score = 0
-  for app in apps_to_check:
+  if not os.path.isfile(app2):
+    score[1] = -1
+    apps_to_check.append(-1)
+  else:
+    app2 = ' '.join([app2, os.path.join(workdir, 'ex2', test_in)])
+    apps_to_check.append(app2)
+  if not apps_to_check:
+    return math.floor(sum(score))
+  for it, app in enumerate(apps_to_check):
+    if app == -1:
+      continue
     ret = ''
-    cmd = "valgrind  --leak-check=full --show-leak-kinds=all -q  %s > /dev/null" % (app)
+    cmd = "valgrind  --leak-check=full --show-leak-kinds=all -q  %s > /dev/null 2>&1" % (app)
     try:
-      ret = get_output(cmd)
+      ret = get_output(cmd, path = workdir)
     except subprocess.CalledProcessError as e:
       print(e.output, file = sys.stderr)
       return -2
     if len(ret) > 2:
-      score -= 1
-  return score
+      score[it] = -1
+  return math.floor(sum(score))
 
 def ex4(infile_c, workdir, sol_dir):
   num_qparts = 12
   score = [0.0] * num_qparts
   app = os.path.join(workdir, 'ex4', 'check_system.sh')
+  if not os.path.isfile(app):
+    return 0
   cmd = 'bash %s' %(app)
   ret = ''
   try:
-    ret = get_output(cmd)
+    ret = get_output(cmd, path = os.path.join(workdir, 'ex4'))
   except subprocess.CalledProcessError as e:
     print(e.output, file = sys.stderr)
     return 0
@@ -200,9 +229,12 @@ def ex4(infile_c, workdir, sol_dir):
 
 def ex5(infile_c, workdir, sol_dir):
   score = 0
-  with open(os.path.join(workdir, 'ex5', 'check_syscalls.sh'), 'r') as scr:
+  app = os.path.join(workdir, 'ex5', 'check_syscalls.sh')
+  if not os.path.isfile(app):
+    return score
+  with open(app, 'r') as scr:
     for line in scr:
       if not line.startswith('#'):
-        if 'strace' in line and any(i in line for i in ['--summary', '-c', 'C']):
+        if 'strace' in line and any(i in line for i in ['--summary', '-c', '-C']):
           score = 4
   return score
