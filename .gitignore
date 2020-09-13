@@ -12,6 +12,8 @@
       
 # log files
 *.log
+*.stderr
+*.stdout
 
 # results
 *.csv
