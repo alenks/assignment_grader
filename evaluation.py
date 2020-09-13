@@ -1,15 +1,28 @@
-import os, sys, subprocess, math
-import shutil, re, errno
+import os, sys, subprocess, threading
+import shutil, re, errno, math
+
+class RunCmd(threading.Thread): # To kill a Popen cmd process after timeout
+  def __init__(self, cmd, timeout):
+    threading.Thread.__init__(self)
+    self.cmd = cmd
+    self.timeout = timeout
+  def run(self):
+    self.p = subprocess.Popen(self.cmd, stdout=subprocess.PIPE)
+    self.p.wait()
+  def Run(self):
+    self.start()
+    self.join(self.timeout)
+    if self.is_alive():
+      self.p.terminate()
+      self.join()
+
 
 def get_output(cmd, path = '.'):
-  basepath = os.getcwd()
-  os.chdir(path)
-  ret = subprocess.getoutput(cmd).strip()
-  os.chdir(basepath)
+  ret = subprocess.check_output(cmd, shell = True, encoding = 'utf8', stderr = subprocess.STDOUT, cwd = path).strip()
   return ret
 
 def ex(cmd):
-  return os.system(cmd)
+  return subprocess.call(cmd, shell = True)
 
 def positive_float(res):
   return not re.match(r'^\+?\d+(?:\.\d+)?$', res) is None
@@ -52,6 +65,7 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = ex(cmd)
   except subprocess.CalledProcessError as e:
+    print('[%s] %s' % (infile_c.rsplit('/', 1)[-1], e), file = sys.stderr)
     return 0
   if not ret:
     score[0] = 2
@@ -66,8 +80,8 @@ def ex1(infile_c, workdir, sol_dir):
   cmd = gen_cmd(workdir, ex_dir, 'ex1', 'big_test')
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
-  except subprocess.CalledProcessError as e:
-    print(e.output, file = sys.stderr)
+  except Exception as e:
+    print('[%s] %s' % (infile_c.rsplit('/', 1)[-1], e), file = sys.stderr)
     return 2
   if len(ret) > 2:
     return 2
@@ -76,8 +90,8 @@ def ex1(infile_c, workdir, sol_dir):
   cmd = gen_cmd(workdir, ex_dir, 'ex1', 'ultra_test')
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
-  except subprocess.CalledProcessError as e:
-    print(e.output, file = sys.stderr)
+  except Exception as e:
+    print('[%s] %s' % (infile_c.rsplit('/', 1)[-1], e), file = sys.stderr)
     return 4
   if len(ret) > 2:
     return 4
@@ -97,6 +111,7 @@ def ex2(infile_c, workdir, sol_dir):
   try:
     ret = ex(cmd)
   except subprocess.CalledProcessError as e:
+    print('[%s] %s' % (infile_c.rsplit('/', 1)[-1], e), file = sys.stderr)
     return 0
   if not ret:
     score[0] = 2
@@ -111,8 +126,8 @@ def ex2(infile_c, workdir, sol_dir):
   cmd = gen_cmd(workdir, ex_dir, 'ex2', 'big_test')
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
-  except subprocess.CalledProcessError as e:
-    print(e.output, file = sys.stderr)
+  except Exception as e:
+    print('[%s] %s' % (infile_c.rsplit('/', 1)[-1], e), file = sys.stderr)
     return 2
   if len(ret) > 2:
     return 2
@@ -121,8 +136,8 @@ def ex2(infile_c, workdir, sol_dir):
   cmd = gen_cmd(workdir, ex_dir, 'ex2', 'ultra_test')
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
-  except subprocess.CalledProcessError as e:
-    print(e.output, file = sys.stderr)
+  except Exception as e:
+    print('[%s] %s' % (infile_c.rsplit('/', 1)[-1], e), file = sys.stderr)
     return 4
   if len(ret) > 2:
     return 4
@@ -158,8 +173,8 @@ def ex3(infile_c, workdir, sol_dir):
     cmd = "valgrind  --leak-check=full --show-leak-kinds=all -q  %s > /dev/null 2>&1" % (app)
     try:
       ret = get_output(cmd, path = workdir)
-    except subprocess.CalledProcessError as e:
-      print(e.output, file = sys.stderr)
+    except Exception as e:
+      print('[%s] %s' % (infile_c.rsplit('/', 1)[-1], e), file = sys.stderr)
       return -2
     if len(ret) > 2:
       score[it] = -1
@@ -175,8 +190,8 @@ def ex4(infile_c, workdir, sol_dir):
   ret = ''
   try:
     ret = get_output(cmd, path = os.path.join(workdir, 'ex4'))
-  except subprocess.CalledProcessError as e:
-    print(e.output, file = sys.stderr)
+  except Exception as e:
+    print('[%s] %s' % (infile_c.rsplit('/', 1)[-1], e), file = sys.stderr)
     return 0
   ret_lines = ret.splitlines()
   for line in ret_lines: # 4 marks
