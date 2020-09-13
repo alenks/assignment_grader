@@ -184,7 +184,6 @@ def main():
   tot_it = len(submission_files) if MAX_ITER == -1 else MAX_ITER
   print('Grading %s submissions' % tot_it)
 
-  print(submission_files)
   try:
     TMPDIR = tempfile.mkdtemp()
   except Exception as e:
