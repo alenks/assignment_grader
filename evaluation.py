@@ -1,23 +1,21 @@
-import os, sys, subprocess, threading
+#!/usr/bin/env python3
+import os, sys, subprocess, threading, signal
 import shutil, re, errno, math
 
-class RunCmd(threading.Thread): # To kill a Popen cmd process after timeout
-  def __init__(self, cmd, timeout):
-    threading.Thread.__init__(self)
-    self.cmd = cmd
-    self.timeout = timeout
-  def run(self):
-    self.p = subprocess.Popen(self.cmd, stdout=subprocess.PIPE)
-    self.p.wait()
-  def Run(self):
-    self.start()
-    self.join(self.timeout)
-    if self.is_alive():
-      self.p.terminate()
-      self.join()
+# https://stackoverflow.com/questions/4789837/how-to-terminate-a-python-subprocess-launched-with-shell-true
+def get_output(cmd, path = '.', timeout = 3): # Handle cases with infinite loops
+  output = ''
+  with subprocess.Popen(cmd, shell=True, encoding = 'utf8', stderr = subprocess.STDOUT,
+          cwd = path, stdout = subprocess.PIPE, preexec_fn = os.setsid) as proc:
+    try:
+      output = proc.communicate(timeout = timeout)[0]
+    except subprocess.TimeoutExpired:
+      os.killpg(proc.pid, signal.SIGINT) # kill the process tree
+      output = proc.communicate()[0]
+      raise
+  return output
 
-
-def get_output(cmd, path = '.'):
+def get_output_no_timeout(cmd, path = '.'):
   ret = subprocess.check_output(cmd, shell = True, encoding = 'utf8', stderr = subprocess.STDOUT, cwd = path).strip()
   return ret
 
