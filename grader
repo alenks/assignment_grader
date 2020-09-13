@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, subprocess
+import os, sys, subprocess, threading
 import getopt, glob, re, itertools
 import time, tempfile, zipfile, tarfile, csv, shutil
 from operator import itemgetter
@@ -15,6 +15,10 @@ ARCHIVETYPE = 'zip'
 NUM_EX = 5
 TMPDIR = ''
 
+orig_stdout = sys.stdout
+orig_stderr = sys.stderr
+sys.stdout = open('grader.stdout', 'w')
+sys.stderr = open('grader.stderr', 'w')
 
 def usage(rc = 2):
   print('Usage:')
@@ -67,6 +71,8 @@ def remove_duplicates(submission_files): # Remove duplicates and select the late
         duplicates.update([(alphanum_key(subm1), subm1), (alphanum_key(subm2), subm2)])
       elif (alphanum_key(subm1), subm1) not in duplicates:
         submission_files_nodup.append(subm1)
+  if (alphanum_key(submission_files[-1]), submission_files[-1]) not in duplicates:
+    submission_files_nodup.append(submission_files[-1])
   duplicates = list(duplicates)
   duplicates = sorted_nicely(duplicates, itemgetter(0))
   files_nodup = {}
@@ -135,6 +141,12 @@ def remove_from_workdir(dirname):
       print(e, file = sys.stderr)
   return
 
+def cleanup():
+  shutil.rmtree(TMPDIR)
+  sys.stdout.close()
+  sys.stderr.close()
+  sys.stdout = orig_stdout
+  sys.stdout = orig_stdout
 
 eval_lst = [
         evaluation.ex1, # 2% {8,6,4,2,0}
@@ -172,6 +184,7 @@ def main():
   tot_it = len(submission_files) if MAX_ITER == -1 else MAX_ITER
   print('Grading %s submissions' % tot_it)
 
+  print(submission_files)
   try:
     TMPDIR = tempfile.mkdtemp()
   except Exception as e:
@@ -190,7 +203,7 @@ def main():
       remove_from_workdir(TMPDIR)
 
   try:
-    shutil.rmtree(TMPDIR)
+    cleanup()
   except Exception as e:
     print(e, file = sys.stderr)
 
@@ -203,7 +216,7 @@ if __name__ == '__main__':
     if os.path.exists(TMPDIR):
       print('\nCtrl-C detected: Removing %s' %(TMPDIR), file = sys.stdout)
       try:
-        shutil.rmtree(TMPDIR)
+        cleanup()
       except Exception as e:
         print(e, file = sys.stderr)
     sys.exit(-1)
