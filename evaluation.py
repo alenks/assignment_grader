@@ -13,6 +13,8 @@ def get_output(cmd, path = '.', timeout = 3): # Handle cases with infinite loops
       os.killpg(proc.pid, signal.SIGINT) # kill the process tree
       output = proc.communicate()[0]
       raise
+    except Exception:
+      raise
   return output
 
 def get_output_no_timeout(cmd, path = '.'):
