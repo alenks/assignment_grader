@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os, sys, subprocess, threading
-import getopt, glob, re, itertools
+import getopt, glob, re, itertools, math
 import time, tempfile, zipfile, tarfile, csv, shutil
 from operator import itemgetter
 import evaluation
@@ -14,6 +14,7 @@ MAX_ITER = -1
 ARCHIVETYPE = 'zip'
 NUM_EX = 5
 TMPDIR = ''
+SCALE = 1.0
 
 ORIG_STDOUT = sys.stdout
 ORIG_STDERR = sys.stderr
@@ -170,11 +171,24 @@ eval_lst = [
 
 def main():
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hb:s:o:t:n:e:", [ "help", "baseline=", "submissions=", "archivetype=", "output=", "stopcount=", "numex=" ])
+      opts, args = getopt.getopt(
+              sys.argv[1:], 
+              "hb:s:o:t:n:e:f:", 
+              [ 
+                  "help", 
+                  "baseline=", 
+                  "submissions=", 
+                  "archivetype=", 
+                  "output=", 
+                  "stopcount=", 
+                  "numex=", 
+                  "scale=",
+                  ]
+              )
   except getopt.GetoptError as e:
     print(e, file = sys.stderr)
     usage(1)
-  global SOLUTIONDIR, SUBMISSIONDIR, OUTFILE, MAX_ITER, ARCHIVETYPE, NUM_EX, TMPDIR
+  global SOLUTIONDIR, SUBMISSIONDIR, OUTFILE, MAX_ITER, ARCHIVETYPE, NUM_EX, TMPDIR, SCALE
   submission_files = []
   for o, a in opts:
     if o == '-h' or o == '--help':
@@ -191,6 +205,8 @@ def main():
       MAX_ITER = int(a)
     if o == '-e' or o == '--numex':
       NUM_EX = int(a)
+    if o == '-f' or o == '--scale':
+      SCALE = float(a)
   
   submission_files = get_submission_files()
   tot_it = len(submission_files) if MAX_ITER == -1 else MAX_ITER
@@ -223,7 +239,7 @@ def main():
           for _ex in range(0, NUM_EX):
             ret = eval_lst[_ex](os.path.join(SUBMISSIONDIR, self.sub_file), workdir, SOLUTIONDIR)
             res_ex.insert(_ex, ret)
-          self.writer.writerow([get_subm_key(self.sub_file)] + res_ex + [max(0, sum(res_ex)), self.sub_file])
+          self.writer.writerow([get_subm_key(self.sub_file)] + res_ex + [round(SCALE * max(0, sum(res_ex))), self.sub_file])
           remove_from_workdir(workdir)
       
       def run(self):
