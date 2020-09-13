@@ -15,8 +15,8 @@ ARCHIVETYPE = 'zip'
 NUM_EX = 5
 TMPDIR = ''
 
-orig_stdout = sys.stdout
-orig_stderr = sys.stderr
+ORIG_STDOUT = sys.stdout
+ORIG_STDERR = sys.stderr
 sys.stdout = open('grader.stdout', 'w')
 sys.stderr = open('grader.stderr', 'w')
 
@@ -154,8 +154,8 @@ def cleanup():
   shutil.rmtree(TMPDIR)
   sys.stdout.close()
   sys.stderr.close()
-  sys.stdout = orig_stdout
-  sys.stdout = orig_stdout
+  sys.stdout = ORIG_STDOUT
+  sys.stderr = ORIG_STDERR
 
 eval_lst = [
         evaluation.ex1, # 2% {8,6,4,2,0}
@@ -197,23 +197,33 @@ def main():
     TMPDIR = tempfile.mkdtemp()
   except Exception as e:
     print(e, file = sys.stderr)
+  
   with open(OUTFILE, 'w') as csv_file:
     writer = csv.writer(csv_file, delimiter=',')
     header = ['StudentID'] + ['Ex' + str(x+1) for x in range(0,NUM_EX)]  + ['Total', 'FileName']
     writer.writerow(header)
-    for _it in range(tot_it):
-      workdir = os.path.join(TMPDIR, alphanum_key(submission_files[_it]))
+    
+    def run_eval(sub_file, writer):
+      workdir = os.path.join(TMPDIR, alphanum_key(sub_file))
       mkdir_p(workdir)
-      copy_to_workdir(submission_files[_it], workdir)
+      copy_to_workdir(sub_file, workdir)
       res_ex = []
       for _ex in range(0, NUM_EX):
-        ret = eval_lst[_ex](os.path.join(SUBMISSIONDIR, submission_files[_it]), workdir, SOLUTIONDIR)
+        ret = eval_lst[_ex](os.path.join(SUBMISSIONDIR, sub_file), workdir, SOLUTIONDIR)
         res_ex.insert(_ex, ret)
-      writer.writerow([get_subm_key(submission_files[_it])] + res_ex + [max(0, sum(res_ex)), submission_files[_it]])
+      writer.writerow([get_subm_key(sub_file)] + res_ex + [max(0, sum(res_ex)), sub_file])
       remove_from_workdir(workdir)
 
+    tid = []
+    for _it in range(tot_it):
+      tid.insert(_it, threading.Thread(target=run_eval, args = (submission_files[_it], writer)))
+      tid[_it].start()
+
+    for _it in range(tot_it):
+      tid[_it].join()
+  print('Done.')
+
   try:
-    print(os.listdir(TMPDIR))
     cleanup()
   except Exception as e:
     print(e, file = sys.stderr)
