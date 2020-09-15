@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, subprocess, threading, signal
+import os, sys, subprocess, signal
 import shutil, re, errno, math
 
 # https://stackoverflow.com/questions/4789837/how-to-terminate-a-python-subprocess-launched-with-shell-true
