@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, subprocess, threading
+import os, sys, subprocess, multiprocessing
 import getopt, glob, re, itertools, math
 import time, tempfile, zipfile, tarfile, csv, shutil
 from operator import itemgetter
@@ -25,7 +25,7 @@ def usage(rc = 2):
           '\n\t\t  [-o <outputfile (%s/results.csv)>]' % BASEPATH + \
           '\n\t\t  [-b <baseline-dir (%s/solutions)>]\t The directory with baseline code' % BASEPATH + \
           '\n\t\t  [-s <submissions-dir (%s/submissions)>]\t The directory with students\' submissions' % BASEPATH + \
-          '\n\t\t  [-t <archivetype> (zip)]\t The archive type of students\' submission' + \
+          '\n\t\t  [-z <archivetype> (zip)]\t The archive type of students\' submission' + \
           '\n\t\t  [-n <num (total submissions)>]\t Stop after grading \'num\' submissions' + \
           '\n\t\t  [-e <num (5)>]\t Total number of exercises'
        )
@@ -173,7 +173,7 @@ def main():
   try:
       opts, args = getopt.getopt(
               sys.argv[1:], 
-              "hb:s:o:t:n:e:f:", 
+              "hb:s:o:z:n:e:f:t:", 
               [ 
                   "help", 
                   "baseline=", 
@@ -199,7 +199,7 @@ def main():
       SUBMISSIONDIR = os.path.abspath(a)
     if o == '-o' or o == '--output':
       OUTFILE = os.path.abspath(a)
-    if o == '-t' or o == '--archivetype':
+    if o == '-z' or o == '--archivetype':
       ARCHIVETYPE = a
     if o == '-n' or o == '--stopcount':
       MAX_ITER = int(a)
@@ -212,8 +212,8 @@ def main():
   tot_it = len(submission_files) if MAX_ITER == -1 else MAX_ITER
   print('Grading %s submissions' % tot_it)
 
-  sys.stdout = open('grader.stdout', 'w')
-  sys.stderr = open('grader.stderr', 'w')
+  sys.stdout = open('grader.out', 'w')
+  sys.stderr = open('grader.err', 'w')
   
   try:
     TMPDIR = tempfile.mkdtemp()
@@ -225,11 +225,11 @@ def main():
     header = ['StudentID'] + ['Ex' + str(x+1) for x in range(0,NUM_EX)]  + ['Total', 'FileName']
     writer.writerow(header)
    
-    class RunEval(threading.Thread):
-      def __init__(self, sub_file, writer):
-        threading.Thread.__init__(self)
+    class RunEval(multiprocessing.Process):
+      def __init__(self, sub_file, queue):
+        multiprocessing.Process.__init__(self)
         self.sub_file = sub_file
-        self.writer = writer
+        self.queue = queue
 
       def run_eval(self):
           workdir = os.path.join(TMPDIR, alphanum_key(self.sub_file))
@@ -239,31 +239,35 @@ def main():
           for _ex in range(0, NUM_EX):
             ret = eval_lst[_ex](os.path.join(SUBMISSIONDIR, self.sub_file), workdir, SOLUTIONDIR)
             res_ex.insert(_ex, ret)
-          self.writer.writerow([get_subm_key(self.sub_file)] + res_ex + [round(SCALE * max(0, sum(res_ex))), self.sub_file])
+          self.queue.put([get_subm_key(self.sub_file)] + res_ex + [round(SCALE * max(0, sum(res_ex))), self.sub_file])
           remove_from_workdir(workdir)
       
       def run(self):
-        self.exc = None
         try:
           self.run_eval()
         except Exception as e:
-          self.exc = e
+          raise e
 
       def join(self):
-        threading.Thread.join(self)
-        if self.exc:
-          raise self.exc
+        try:
+          multiprocessing.Process.join(self)
+        except Exception as e:
+          raise e
 
-    tid = []
+    q = multiprocessing.Queue()
+    pid = []
     for _it in range(tot_it):
-      tid.insert(_it, RunEval(submission_files[_it], writer))
-      tid[_it].start()
+      pid.insert(_it, RunEval(sub_file=submission_files[_it], queue=q))
+      pid[_it].start()
 
     for _it in range(tot_it):
       try:
-        tid[_it].join()
+        pid[_it].join()
       except Exception as e:
         print(e, file = sys.stderr)
+
+    while not q.empty():
+      writer.writerow(q.get())
 
   try:
     cleanup()
