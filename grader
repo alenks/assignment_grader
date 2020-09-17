@@ -258,6 +258,7 @@ def main():
     pid = []
     for _it in range(tot_it):
       pid.insert(_it, RunEval(sub_file=submission_files[_it], queue=q))
+      pid[_it].daemon = True
       pid[_it].start()
 
     for _it in range(tot_it):
