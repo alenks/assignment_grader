@@ -81,6 +81,7 @@ def ex1(infile_c, workdir, sol_dir):
 
   copy_testing_files(sol_dir, workdir, ex_dir, files)
   if not os.path.isfile(os.path.join(workdir, ex_dir, 'node.c')):
+    print('[%s][%s] File \'node.c\' not found' % (get_id(infile_c), exn), file = sys.stderr)
     return 0
   cmd = "make -C %s > /dev/null 2>&1" %(os.path.join(workdir, ex_dir))
   try:
@@ -187,6 +188,7 @@ def ex2(infile_c, workdir, sol_dir):
   files = ['Makefile', 'node.h', 'functions.c', 'functions.h', 'ultra_test.in', 'ultra_test.out', 'big_test.in', 'big_test.out']
   copy_testing_files(sol_dir, workdir, ex_dir, files)
   if not os.path.isfile(os.path.join(workdir, ex_dir, 'node.c')):
+    print('[%s][%s] File \'node.c\' not found' % (get_id(infile_c), exn), file = sys.stderr)
     return 0
   cmd = "make -C %s > /dev/null 2>&1" %(os.path.join(workdir, ex_dir))
   try:
