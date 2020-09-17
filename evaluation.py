@@ -60,6 +60,8 @@ def get_id(file1):
     return file1[:9]
   return 'Error'
 
+def printable(e, workdir):
+  return ' '.join(str(e).replace(workdir+'/', '').strip().split())
 
 
 
@@ -84,12 +86,12 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = ex(cmd)
   except subprocess.CalledProcessError as e:
-    print('[%s][%s] Compilation failed: %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Compilation failed: %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     return 0
   if not ret:
     score[0] = 2
   else:
-    print('[%s][%s] Compilation failed: Errcode %s' % (get_id(infile_c), exn, str(ret)), file = sys.stderr)
+    print('[%s][%s] Compilation failed: Errcode %s' % (get_id(infile_c), exn, printable(ret, workdir)), file = sys.stderr)
     return 0
   def gen_cmd(workdir, ex_dir, ex_no, testfile):
     cmd = os.path.join(workdir, ex_dir, ex_no)
@@ -101,7 +103,7 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'insert_node_from_head_at()\' using \'inserthead_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'insert_node_from_head_at()\' using \'inserthead_test.in\'. %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     score[1] = 0
   else:
     if len(ret) > 2:
@@ -114,7 +116,7 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'insert_node_from_tail_at()\' using \'inserttail_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'insert_node_from_tail_at()\' using \'inserttail_test.in\'. %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     score[2] = 0
   else:
     if len(ret) > 2:
@@ -127,7 +129,7 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'delete_node_from_head_at()\' using \'deletehead_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'delete_node_from_head_at()\' using \'deletehead_test.in\'. %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     score[3] = 0
   else:
     if len(ret) > 2:
@@ -140,7 +142,7 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'delete_node_from_tail_at()\' using \'deletetail_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'delete_node_from_tail_at()\' using \'deletetail_test.in\'. %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     score[4] = 0
   else:
     if len(ret) > 2:
@@ -153,7 +155,7 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'reset_list()\' using \'resetlist.in. %s\'' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'reset_list()\' using \'resetlist.in. %s\'' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     score[5] = 0
   else:
     if len(ret) > 2:
@@ -166,7 +168,7 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error with \'ultra_test.in\' testcase. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error with \'ultra_test.in\' testcase. %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     score[6] = 0
   else:
     if len(ret) > 2:
@@ -190,12 +192,12 @@ def ex2(infile_c, workdir, sol_dir):
   try:
     ret = ex(cmd)
   except subprocess.CalledProcessError as e:
-    print('[%s][%s] Compilation failed: %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Compilation failed: %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     return 0
   if not ret:
     score[0] = 2
   else:
-    print('[%s][%s] Compilation failed: Errcode %s' % (get_id(infile_c), exn, str(ret)), file = sys.stderr)
+    print('[%s][%s] Compilation failed: Errcode %s' % (get_id(infile_c), exn, printable(ret, workdir)), file = sys.stderr)
     return 0
   def gen_cmd(workdir, ex_dir, ex_no, testfile):
     cmd = os.path.join(workdir, ex_dir, ex_no)
@@ -207,7 +209,7 @@ def ex2(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Runtime error with \'ultra_test.in\' testcase. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Runtime error with \'ultra_test.in\' testcase. %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     score[1] = 0
   else:
     if len(ret) > 2:
@@ -222,19 +224,19 @@ def ex2(infile_c, workdir, sol_dir):
   try:
     ret = ex(cmd)
   except subprocess.CalledProcessError as e:
-    print('[%s][%s] Function pointer test. Compilation failed: %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Function pointer test. Compilation failed: %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     return math.floor(sum(score))
   if not ret:
     score[2] = 2
   else:
-    print('[%s][%s] Function pointer test. Compilation failed: Errcode %s' % (get_id(infile_c), exn, str(ret)), file = sys.stderr)
+    print('[%s][%s] Function pointer test. Compilation failed: Errcode %s' % (get_id(infile_c), exn, printable(ret, workdir)), file = sys.stderr)
     return math.floor(sum(score))
 
   cmd = gen_cmd(workdir, ex_dir, 'fptest', 'fp_test')
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Runtime error with function pointer test using \'fp_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Runtime error with function pointer test using \'fp_test.in\'. %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     score[3] = 0
   else:
     if len(ret) > 2:
@@ -277,10 +279,10 @@ def ex3(infile_c, workdir, sol_dir):
     try:
       ret = get_output(cmd, path = workdir, timeout=10)
     except Exception as e:
-      print('[%s][%s] Runtime error. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+      print('[%s][%s] Runtime error. %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
       return -2
     if len(ret) > 2:
-      print('[%s][%s] Error: %s' % (get_id(infile_c), exn, str(ret).replace(workdir+'/', '').strip()), file = sys.stderr)
+      print('[%s][%s] Error: %s' % (get_id(infile_c), exn, printable(ret, workdir)), file = sys.stderr)
       score[it] = -1
     else:
       score[it] = 0
@@ -299,7 +301,7 @@ def ex4(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, 'ex4'), timeout=10)
   except Exception as e:
-    print('[%s][%s] %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] %s' % (get_id(infile_c), exn, printable(e, workdir)), file = sys.stderr)
     return 0
   ret_lines = ret.splitlines()
   for line in ret_lines: # 4 marks
