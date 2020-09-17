@@ -162,11 +162,11 @@ def cleanup():
   sys.stderr = ORIG_STDERR
 
 eval_lst = [
-        evaluation.ex1, # 2% {8,6,4,2,0}
-        evaluation.ex2, # 2% {8,6,4,2,0}
-        evaluation.ex3, # 0% {0,-1,-2}
-        evaluation.ex4, # 2% {8,7,6,5,4,3,2,1,0}
-        evaluation.ex5, # 1% {4,0}
+        evaluation.ex1, # 2%
+        evaluation.ex2, # 2%
+        evaluation.ex3, # 0%
+        evaluation.ex4, # 2%
+        evaluation.ex5, # 1%
         ]
 
 def main():
