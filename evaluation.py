@@ -101,11 +101,11 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'insert_node_from_head_at()\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'insert_node_from_head_at()\' using \'inserthead_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
     score[1] = 0
   else:
     if len(ret) > 2:
-      print('[%s][%s] Wrong output for \'insert_node_from_head_at()\'' % (get_id(infile_c), exn), file = sys.stderr)
+      print('[%s][%s] Wrong output for \'insert_node_from_head_at()\' using \'inserthead_test.in\'' % (get_id(infile_c), exn), file = sys.stderr)
       score[1] = 0
     else:
       score[1] = 1
@@ -114,11 +114,11 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'insert_node_from_tail_at()\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'insert_node_from_tail_at()\' using \'inserttail_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
     score[2] = 0
   else:
     if len(ret) > 2:
-      print('[%s][%s] Wrong output for \'insert_node_from_tail_at()\'' % (get_id(infile_c), exn), file = sys.stderr)
+      print('[%s][%s] Wrong output for \'insert_node_from_tail_at()\' using \'inserttail_test.in\'' % (get_id(infile_c), exn), file = sys.stderr)
       score[2] = 0
     else:
       score[2] = 1
@@ -127,11 +127,11 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'delete_node_from_head_at()\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'delete_node_from_head_at()\' using \'deletehead_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
     score[3] = 0
   else:
     if len(ret) > 2:
-      print('[%s][%s] Wrong output for \'delete_node_from_head_at()\'' % (get_id(infile_c), exn), file = sys.stderr)
+      print('[%s][%s] Wrong output for \'delete_node_from_head_at()\' using \'deletehead_test.in\'' % (get_id(infile_c), exn), file = sys.stderr)
       score[3] = 0
     else:
       score[3] = 1
@@ -140,11 +140,11 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'delete_node_from_tail_at()\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'delete_node_from_tail_at()\' using \'deletetail_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
     score[4] = 0
   else:
     if len(ret) > 2:
-      print('[%s][%s] Wrong output for \'delete_node_from_tail_at()\'' % (get_id(infile_c), exn), file = sys.stderr)
+      print('[%s][%s] Wrong output for \'delete_node_from_tail_at()\' using \'deletetail_test.in\'' % (get_id(infile_c), exn), file = sys.stderr)
       score[4] = 0
     else:
       score[4] = 1
@@ -153,11 +153,11 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error for \'reset_list()\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error for \'reset_list()\' using \'resetlist.in. %s\'' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
     score[5] = 0
   else:
     if len(ret) > 2:
-      print('[%s][%s] Wrong output for \'reset_list()\'' % (get_id(infile_c), exn), file = sys.stderr)
+      print('[%s][%s] Wrong output for \'reset_list()\' using \'resetlist.in\'' % (get_id(infile_c), exn), file = sys.stderr)
       score[5] = 0
     else:
       score[5] = 1
@@ -166,11 +166,11 @@ def ex1(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Rutime error with custom testcase. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Rutime error with \'ultra_test.in\' testcase. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
     score[6] = 0
   else:
     if len(ret) > 2:
-      print('[%s][%s] Wrong output with custom testcase' % (get_id(infile_c), exn), file = sys.stderr)
+      print('[%s][%s] Wrong output with \'ultra_test.in\' testcase' % (get_id(infile_c), exn), file = sys.stderr)
       score[6] = 0
     else:
       score[6] = 1
@@ -207,11 +207,11 @@ def ex2(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Runtime error with custom testcase. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Runtime error with \'ultra_test.in\' testcase. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
     score[1] = 0
   else:
     if len(ret) > 2:
-      print('[%s][%s] Wrong output with custom testcase' % (get_id(infile_c), exn), file = sys.stderr)
+      print('[%s][%s] Wrong output with \'ultra_test.in\' testcase' % (get_id(infile_c), exn), file = sys.stderr)
       score[1] = 0
     else:
       score[1] = 2
@@ -234,11 +234,11 @@ def ex2(infile_c, workdir, sol_dir):
   try:
     ret = get_output(cmd, path = os.path.join(workdir, ex_dir))
   except Exception as e:
-    print('[%s][%s] Runtime error with function pointer test. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
+    print('[%s][%s] Runtime error with function pointer test using \'fp_test.in\'. %s' % (get_id(infile_c), exn, str(e).replace(workdir+'/', '').strip()), file = sys.stderr)
     score[3] = 0
   else:
     if len(ret) > 2:
-      print('[%s][%s] Function pointer test failed' % (get_id(infile_c), exn), file = sys.stderr)
+      print('[%s][%s] Function pointer test failed using \'fp_test.in\'' % (get_id(infile_c), exn), file = sys.stderr)
       score[3] = 0
     else:
       score[3] = 2
